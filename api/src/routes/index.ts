@@ -1,0 +1,64 @@
+import AuthRoutes from '../tv-modules/auth/AuthRoutes';
+import CollaborationRoutes from '../tv-modules/collaboration/CollaborationRoutes';
+import CollaborationRolesRoutes from '../tv-modules/collaboration-roles/CollaborationRolesRoutes';
+import GoalsRoutes from '../tv-modules/goals/GoalsRoutes';
+import GraphRoutes from '../tv-modules/graph/GraphRoutes';
+import IntegrationsRoutes from '../tv-modules/integrations/IntegrationsRoutes';
+import NotificationsRoutes from '../tv-modules/notifications/NotificationsRoutes';
+import WebhooksRoutes from '../tv-modules/webhooks/WebhooksRoutes';
+import MessagingRoutes from '../tv-modules/messaging/MessagingRoutes';
+import ApiTokensRoutes from '../tv-modules/api-tokens/ApiTokensRoutes';
+import OAuthRoutes from '../tv-modules/oauth/OAuthRoutes';
+import OAuthWellKnownRoutes from '../tv-modules/oauth/OAuthWellKnownRoutes';
+import SessionsRoutes from '../tv-modules/sessions/SessionsRoutes';
+import KanbanRoutes from '../tv-modules/kanban/KanbanRoutes';
+import GoalListRoutes from '../tv-modules/lists/GoalListRoutes';
+import StartRoutes from '../tv-modules/start/StartRoutes';
+import TagsRouter from '../tv-modules/tags/TagsRouter';
+import TasksRoutes from '../tv-modules/tasks/TasksRoutes';
+import OrganizationRoutes from '../tv-modules/organizations/OrganizationRoutes';
+import SsoRoutes from '../tv-modules/sso/SsoRoutes';
+import ScimRoutes from '../tv-modules/scim/ScimRoutes';
+import AnalyticsRoutes from '../tv-modules/analytics/AnalyticsRoutes';
+import TimeTrackingRoutes from '../tv-modules/time-tracking/TimeTrackingRoutes';
+import UiPreferencesRoutes from '../tv-modules/ui-preferences/UiPreferencesRoutes';
+import SprintsRoutes from '../tv-modules/sprints/SprintsRoutes';
+import RecurrenceRoutes from '../tv-modules/recurrence/RecurrenceRoutes';
+import BillingRoutes from '../tv-modules/billing/BillingRoutes';
+import InvoicesRoutes from '../tv-modules/invoices/InvoicesRoutes';
+import type { Routable } from '../types/routable.type';
+
+type RoutableConstructor = new (...args: any[]) => Routable;
+
+const routes: Record<string, RoutableConstructor> = {
+    '/module/auth': AuthRoutes,
+    '/module/goals': GoalsRoutes,
+    '/module/goal_lists': GoalListRoutes,
+    '/module/tasks': TasksRoutes,
+    '/module/collaboration': CollaborationRoutes,
+    '/module/collaborationroles': CollaborationRolesRoutes,
+    '/module/tags': TagsRouter,
+    '/module/about': StartRoutes,
+    '/module/kanban': KanbanRoutes,
+    '/module/graph': GraphRoutes,
+    '/module/integrations': IntegrationsRoutes,
+    '/module/notifications': NotificationsRoutes,
+    '/module/webhooks': WebhooksRoutes,
+    '/module/messaging': MessagingRoutes,
+    '/module/api-tokens': ApiTokensRoutes,
+    '/module/oauth': OAuthRoutes,
+    '/module/sessions': SessionsRoutes,
+    '/module/organizations': OrganizationRoutes,
+    '/module/sso': SsoRoutes,
+    '/module/analytics': AnalyticsRoutes,
+    '/module/time-tracking': TimeTrackingRoutes,
+    '/module/ui-preferences': UiPreferencesRoutes,
+    '/module/sprints': SprintsRoutes,
+    '/module/recurrence': RecurrenceRoutes,
+    '/module/billing': BillingRoutes,
+    '/module/invoices': InvoicesRoutes,
+    '/scim/v2': ScimRoutes,
+    '/.well-known': OAuthWellKnownRoutes,
+};
+
+export default routes;

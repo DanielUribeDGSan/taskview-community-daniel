@@ -1,0 +1,61 @@
+networks:
+  backend:
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    env_file:
+      - ./.env.postgresql
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tvdbuser -d taskviewdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  migration:
+    image: gimanhead/taskview-ce-db-migration:latest
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./.env.taskview
+    networks:
+      - backend
+
+  taskview-api-server:
+    image: gimanhead/taskview-ce-api-server:latest
+    restart: unless-stopped
+    ports:
+      - "1725:1401"
+    depends_on:
+      db:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+    env_file:
+      - ./.env.taskview
+    volumes:
+      - ./logs:/usr/src/app/logs
+    networks:
+      - backend
+
+  taskview-webapp:
+    image: gimanhead/taskview-ce-webapp:latest
+    restart: unless-stopped
+    ports:
+      - "8888:80"
+    environment:
+      TASKVIEW_API_URL: "http://localhost:1725"
+    networks:
+      - backend
+
+volumes:
+  pgdata:

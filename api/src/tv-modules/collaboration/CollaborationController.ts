@@ -1,0 +1,164 @@
+import { type } from 'arktype';
+import type { Request, Response } from 'express';
+import { eventBus } from '../../core/EventBus';
+import { $logger } from '../../modules/logget';
+import {
+    CollaborationArkTypeAddUser,
+    CollaborationArkTypeDeleteUser,
+    CollaborationArkTypeFetchUsersForGoal,
+    CollaborationArkTypeToggleUserRoles,
+} from './collaboration.server.types';
+import {
+    AddUserArgScheme,
+    DeleteUserArgScheme,
+    FetchGoalUsersArgSchema,
+    ToggleUserRolesArgScheme,
+} from './collaboration.types';
+
+export class CollaborationController {
+    /** @deprecated */
+    fetchAllUsers = async (req: Request, res: Response) => {
+        const users = await req.appUser.collaborationManager.fetchAllUsers();
+        return res.tvJson(users);
+    };
+
+    fetchUsersForGoals = async (req: Request, res: Response) => {
+        const args = FetchGoalUsersArgSchema.safeParse(req.params);
+
+        if (!args.success) {
+            return res.status(400).end();
+        }
+        const users = await req.appUser.collaborationManager.fetchUsersForGoal(args.data);
+
+        return res.tvJson(users);
+    };
+
+    toggleUserRoles = async (req: Request, res: Response) => {
+        const args = ToggleUserRolesArgScheme.safeParse(req.body);
+
+        if (!args.success) {
+            $logger.error(req.body, `Can not toggle role for user`);
+            return res.status(400).end();
+        }
+
+        const roles = await req.appUser.collaborationManager.toggleUserRoles(args.data);
+
+        if (!roles) {
+            return res.status(500).end();
+        }
+
+        return res.tvJson({ roles });
+    };
+
+    addUser = async (req: Request, res: Response) => {
+        const args = AddUserArgScheme.safeParse(req.body);
+
+        if (!args.success) {
+            return res.status(400).end();
+        }
+
+        const user = await req.appUser.collaborationManager.addUser(args.data);
+        return res.tvJson({
+            add: !!user,
+            user,
+        });
+    };
+
+    deleteUser = async (req: Request, res: Response) => {
+        const args = DeleteUserArgScheme.safeParse(req.body);
+
+        if (!args.success) {
+            return res.status(500).end();
+        }
+
+        return res.tvJson({
+            delete: await req.appUser.collaborationManager.deleteUser(args.data),
+        });
+    };
+
+    addUserNew = async (req: Request, res: Response) => {
+        const output = CollaborationArkTypeAddUser(req.body);
+
+        if (output instanceof type.errors) {
+            return res.status(400).send(output.summary);
+        }
+
+        const result = await req.appUser.collaborationManager.addUserNew(output);
+
+        // created=false means the person was already in the goal — re-POSTing must not re-notify
+        if (result?.created) {
+            eventBus.emit('collaboration.userAdded', {
+                goalId: output.goalId,
+                email: output.email.toLowerCase(),
+                initiatorId: req.appUser.getUserData()!.id,
+                locale: this.resolveLocale(req),
+            });
+        }
+
+        return res.tvJson(result?.user ?? null);
+    };
+
+    // The invitee has no stored locale (often no account yet), so localize by the inviter's browser language
+    private resolveLocale(req: Request): 'en' | 'ru' {
+        const acceptLanguage = req.headers['accept-language'];
+        if (!acceptLanguage) return 'en';
+
+        const languages = acceptLanguage.split(',').map((lang) => lang.split(';')[0].trim().toLowerCase());
+        return languages.some((lang) => lang === 'ru' || lang.startsWith('ru-')) ? 'ru' : 'en';
+    }
+
+    deleteUserNew = async (req: Request, res: Response) => {
+        const output = CollaborationArkTypeDeleteUser(req.body);
+
+        if (output instanceof type.errors) {
+            return res.status(400).send(output.summary);
+        }
+
+        const result = await req.appUser.collaborationManager.deleteUserNew(output);
+
+        if (result) {
+            eventBus.emit('collaboration.userRemoved', {
+                goalId: output.goalId,
+                collaborationUserId: output.id,
+                initiatorId: req.appUser.getUserData()!.id,
+            });
+        }
+
+        return res.tvJson(result);
+    };
+
+    toggleUserRolesNew = async (req: Request, res: Response) => {
+        const output = CollaborationArkTypeToggleUserRoles(req.body);
+
+        if (output instanceof type.errors) {
+            return res.status(400).send(output.summary);
+        }
+
+        const result = await req.appUser.collaborationManager.toggleUserRolesNew(output);
+
+        eventBus.emit('collaboration.rolesChanged', {
+            goalId: output.goalId,
+            collaborationUserId: output.userId,
+            initiatorId: req.appUser.getUserData()!.id,
+        });
+
+        return res.tvJson(result);
+    };
+
+    fetchAllUsersNew = async (req: Request, res: Response) => {
+        const organizationId = req.query.organizationId ? Number(req.query.organizationId) : undefined;
+        const users = await req.appUser.collaborationManager.fetchAllUsersNew(organizationId);
+        return res.tvJson(users);
+    };
+
+    fetchUsersForGoalNew = async (req: Request, res: Response) => {
+        const output = CollaborationArkTypeFetchUsersForGoal(req.params);
+
+        if (output instanceof type.errors) {
+            return res.status(400).send(output.summary);
+        }
+
+        const users = await req.appUser.collaborationManager.fetchUsersForGoalNew(output.goalId);
+        return res.tvJson(users);
+    };
+}
