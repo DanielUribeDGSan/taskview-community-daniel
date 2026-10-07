@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-default">
+  <div class="min-h-screen bg-default text-default">
     <header class="border-b border-default sticky top-0 z-10 bg-default/95 backdrop-blur">
       <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
         <div class="min-w-0">
@@ -10,13 +10,46 @@
             {{ t('tasks.share.publicTitle') }}
           </h1>
         </div>
-        <UButton
-          :to="'/'"
-          color="neutral"
-          variant="ghost"
-          size="sm"
-          :label="t('tasks.share.goHome')"
-        />
+        <div class="flex items-center gap-2 shrink-0">
+          <div
+            class="inline-flex items-center p-0.5 rounded-xl border border-default bg-muted/20"
+            role="group"
+            aria-label="Theme switcher"
+          >
+            <button
+              type="button"
+              class="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer"
+              :class="!isDark ? 'bg-default text-default shadow-xs' : 'text-muted hover:text-default'"
+              @click="setTheme('light')"
+            >
+              <UIcon
+                name="i-lucide-sun"
+                class="size-3.5"
+              />
+              <span>White</span>
+            </button>
+            <button
+              type="button"
+              class="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer"
+              :class="isDark ? 'bg-default text-default shadow-xs' : 'text-muted hover:text-default'"
+              @click="setTheme('dark')"
+            >
+              <UIcon
+                name="i-lucide-moon"
+                class="size-3.5"
+              />
+              <span>Black</span>
+            </button>
+          </div>
+
+          <UButton
+            :to="'/'"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            :label="t('tasks.share.goHome')"
+          />
+        </div>
       </div>
     </header>
 
@@ -187,7 +220,7 @@
         <!-- Historial de cambios / Actividad -->
         <div
           v-if="payload.history?.length || payload.lastModified"
-          class="flex flex-col gap-3 border border-default rounded-2xl p-3.5 dark:bg-tv-ui-bg-elevated"
+          class="flex flex-col gap-3 border border-default rounded-2xl p-3.5 bg-white dark:bg-tv-ui-bg-elevated text-neutral-900 dark:text-neutral-100"
           data-testid="task-history"
         >
           <div class="flex items-center justify-between">
@@ -265,6 +298,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useColorMode } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import type { PublicSharedTask } from 'taskview-api'
@@ -278,6 +312,13 @@ const { t } = useI18n()
 const route = useRoute()
 const toast = useToast()
 const { options: priorityOptions } = usePriorityOptions()
+
+const colorMode = useColorMode({ emitAuto: true })
+const isDark = computed(() => colorMode.value === 'dark')
+
+function setTheme(theme: 'light' | 'dark') {
+  colorMode.value = theme
+}
 
 const token = computed(() => String(route.params.token || ''))
 const loading = ref(true)

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col gap-3 border border-default rounded-2xl p-3 dark:bg-tv-ui-bg-elevated"
+    class="flex flex-col gap-3 border border-default rounded-2xl p-3 bg-white dark:bg-tv-ui-bg-elevated text-neutral-900 dark:text-neutral-100"
     data-testid="task-comments"
   >
     <div class="flex items-center gap-2 text-sm font-medium">

@@ -5,7 +5,7 @@
       :disabled="!isTeleported"
     >
       <div
-        class="note-editor relative overflow-clip dark:bg-tv-ui-bg-elevated!"
+        class="note-editor relative overflow-clip bg-white dark:bg-tv-ui-bg-elevated! text-neutral-900 dark:text-neutral-100"
         :class="[
           isFullscreen ? 'flex flex-col flex-1 min-h-0' : 'border border-default rounded-2xl',
           isDraggingOver ? 'is-drag-over' : '',
