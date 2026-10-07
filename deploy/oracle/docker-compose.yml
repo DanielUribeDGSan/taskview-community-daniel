@@ -1,0 +1,60 @@
+networks:
+  backend:
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    env_file:
+      - ./.env.postgresql
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tvdbuser -d taskviewdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  migration:
+    image: taskview-ce-db-migration:task-share
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./.env.taskview
+    networks:
+      - backend
+
+  taskview-api-server:
+    image: taskview-ce-api-server:task-share
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1725:1401"
+    depends_on:
+      db:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+    env_file:
+      - ./.env.taskview
+    volumes:
+      - ./logs:/usr/src/app/logs
+    networks:
+      - backend
+
+  taskview-webapp:
+    image: taskview-ce-webapp:task-share
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8888:80"
+    environment:
+      # Same origin: Caddy routes /module, /scim, /.well-known → API
+      TASKVIEW_API_URL: "https://affine-uribe.duckdns.org"
+    networks:
+      - backend
+
+volumes:
+  pgdata:

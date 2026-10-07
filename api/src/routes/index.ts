@@ -26,6 +26,7 @@ import SprintsRoutes from '../tv-modules/sprints/SprintsRoutes';
 import RecurrenceRoutes from '../tv-modules/recurrence/RecurrenceRoutes';
 import BillingRoutes from '../tv-modules/billing/BillingRoutes';
 import InvoicesRoutes from '../tv-modules/invoices/InvoicesRoutes';
+import PublicTaskShareRoutes from '../tv-modules/task-share/PublicTaskShareRoutes';
 import type { Routable } from '../types/routable.type';
 
 type RoutableConstructor = new (...args: any[]) => Routable;
@@ -35,6 +36,7 @@ const routes: Record<string, RoutableConstructor> = {
     '/module/goals': GoalsRoutes,
     '/module/goal_lists': GoalListRoutes,
     '/module/tasks': TasksRoutes,
+    '/module/public': PublicTaskShareRoutes,
     '/module/collaboration': CollaborationRoutes,
     '/module/collaborationroles': CollaborationRolesRoutes,
     '/module/tags': TagsRouter,

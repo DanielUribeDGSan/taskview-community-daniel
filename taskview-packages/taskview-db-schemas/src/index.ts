@@ -1,4 +1,6 @@
 export * from './schemas/tasks.schema';
+export * from './schemas/task-shares.schema';
+export * from './schemas/task-comments.schema';
 export * from './schemas/graph.schema';
 export * from './schemas/tasks-to-tags.schema';
 export * from './schemas/tags.schema';

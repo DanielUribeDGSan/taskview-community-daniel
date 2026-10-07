@@ -1,0 +1,14 @@
+affine-uribe.duckdns.org {
+	encode gzip
+
+	# TaskView API (same origin)
+	@api path /module/* /scim/* /.well-known/*
+	handle @api {
+		reverse_proxy 127.0.0.1:1725
+	}
+
+	# TaskView web (Vue SPA)
+	handle {
+		reverse_proxy 127.0.0.1:8888
+	}
+}

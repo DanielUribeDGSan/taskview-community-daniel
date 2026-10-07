@@ -40,6 +40,11 @@ function buildRoutes(extensions: TvWebExtension[]): RouteRecordRaw[] {
       component: () => import('./pages/reset-password.vue'),
     },
     {
+      path: '/share/t/:token',
+      name: 'public-shared-task',
+      component: () => import('./pages/public/shared-task.vue'),
+    },
+    {
       // Outside /:orgSlug on purpose — the OAuth flow lands here before any
       // organization is chosen. The guard sends an unauthenticated user to
       // login and back, so consent is always given by a real browser session.

@@ -5,6 +5,7 @@ import type {
     CollaborationArgAddUser,
     CollaborationArgDeleteRoleFromGoal,
     CollaborationArgDeleteUser,
+    CollaborationArgResendInvite,
     CollaborationArgToggleRolePermission,
     CollaborationArgToggleUserRoles,
     CollaborationPermission,
@@ -27,6 +28,14 @@ export class TvCollaborationApi extends TvApiBase {
         return this.request(
             this.$axios.post<AppResponse<CollaborationResponseAddUser>>(
                 `${this.moduleUrl}`, data
+            )
+        );
+    }
+
+    public async resendInvite(data: CollaborationArgResendInvite) {
+        return this.request(
+            this.$axios.post<AppResponse<boolean>>(
+                `${this.moduleUrl}/resend-invite`, data
             )
         );
     }

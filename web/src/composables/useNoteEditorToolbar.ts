@@ -66,6 +66,11 @@ const blockItems: EditorToolbarItem[] = [{
     icon: 'i-lucide-list-ordered',
     label: 'Ordered List',
     ui: itemUi,
+  }, {
+    kind: 'taskList',
+    icon: 'i-lucide-list-checks',
+    label: 'Checklist',
+    ui: itemUi,
   }],
 }, {
   kind: 'blockquote',

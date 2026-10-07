@@ -548,7 +548,7 @@
         ],
         "description": [
             "Updated descriptions of timetracking_can_view and timetracking_can_manage_all to document that these permissions also expose contributor emails through the time-entry log",
-            "Tightened timetracking_can_log description: it grants only start/stop/createManual, NOT edit/delete (including own entries). Edit/delete now requires timetracking_can_manage_all — see can-access-time-entry middleware change."
+            "Tightened timetracking_can_log description: it grants only start/stop/createManual, NOT edit/delete (including own entries). Edit/delete now requires timetracking_can_manage_all \u2014 see can-access-time-entry middleware change."
         ]
     },
     "44": {
@@ -559,7 +559,7 @@
             "/1.51.0/0.tasks_to_tags_indexes.sql"
         ],
         "description": [
-            "Added btree indexes on tasks.tasks_to_tags(task_id) and (tag_id) — FK constraints do not create indexes in Postgres, so anti-joins (NOT EXISTS for untagged tasks) and inner joins from tasks were seq-scanning. Needed for tag-financial analytics charts."
+            "Added btree indexes on tasks.tasks_to_tags(task_id) and (tag_id) \u2014 FK constraints do not create indexes in Postgres, so anti-joins (NOT EXISTS for untagged tasks) and inner joins from tasks were seq-scanning. Needed for tag-financial analytics charts."
         ]
     },
     "45": {
@@ -591,14 +591,14 @@
             "/1.53.0/all-triggers.sql"
         ],
         "description": [
-            "Added tasks.goals.estimate_unit ('hours' | 'points', default 'points') — per-project unit for sprint estimates & capacity display.",
+            "Added tasks.goals.estimate_unit ('hours' | 'points', default 'points') \u2014 per-project unit for sprint estimates & capacity display.",
             "Sprints feature. tasks.sprints: sprint container with lifecycle draft/planned/active/review/completed; one active-or-review sprint per project enforced by a partial unique index.",
             "tasks.sprint_task_outcomes: per-task result decided at close (accepted/carried-over/dropped/incomplete). tasks.sprint_user_capacity: per-user capacity. tasks.sprint_retros: went well/bad/action items. Sprint capacity column is `capacity` (story points, unitless).",
             "Extended tasks.tasks with sprint_id (FK SET NULL) and estimate_value (task estimate in story points, unitless), and tasks.notifications with sprint_id. Sprint availability is governed by the sprint_can_view permission (RBAC), not a per-project flag. Sprint burndown reuses the existing trigger-maintained tasks.date_complete column (no new completion column added).",
             "Added permission group 5 'sprints' and permissions sprint_can_view, sprint_can_manage, sprint_can_assign_tasks, sprint_can_view_analytics; backfilled grants for existing projects' editor/executor roles.",
             "all-triggers.sql: re-applies all triggers idempotently (drop+create) and updates tasks.add_roles_and_permissions() so NEW projects grant sprint permissions to editor (all four) and executor (view + assign).",
-            "Added tasks.sprint_task_outcomes.estimate_value — story-points snapshot captured at sprint close so a closed sprint's velocity is frozen (unaffected by later estimate edits or moving the task to another sprint).",
-            "Added tasks.sprint_cadence — per-project sprint auto-generation config (Linear-style): enabled, length_days, start_date anchor, lookahead, name_template, last_generated_date. A background job keeps current + lookahead future sprints created."
+            "Added tasks.sprint_task_outcomes.estimate_value \u2014 story-points snapshot captured at sprint close so a closed sprint's velocity is frozen (unaffected by later estimate edits or moving the task to another sprint).",
+            "Added tasks.sprint_cadence \u2014 per-project sprint auto-generation config (Linear-style): enabled, length_days, start_date anchor, lookahead, name_template, last_generated_date. A background job keeps current + lookahead future sprints created."
         ]
     },
     "47": {
@@ -613,10 +613,10 @@
             "/1.54.0/4.alter-tasks-add-recurrence.sql"
         ],
         "description": [
-            "Recurring tasks (lazy materialization, Todoist-like UX). tasks.recurrence_rules: one row per series — RFC 5545 RRULE string, floating wall-clock dtstart, IANA timezone, state active/paused/ended, last_instance_date + instances_created drive next-occurrence computation. Template snapshot columns (description/note/priority/status/list/duration) let the series outlive its origin task.",
+            "Recurring tasks (lazy materialization, Todoist-like UX). tasks.recurrence_rules: one row per series \u2014 RFC 5545 RRULE string, floating wall-clock dtstart, IANA timezone, state active/paused/ended, last_instance_date + instances_created drive next-occurrence computation. Template snapshot columns (description/note/priority/status/list/duration) let the series outlive its origin task.",
             "tasks.recurrence_skip_dates: per-rule skipped occurrence dates. tasks.recurrence_template_assignees / recurrence_template_tags: snapshot of assignees (collaboration.users) and tags copied onto each materialized instance.",
-            "Extended tasks.tasks with recurrence_rule_id (FK SET NULL — instances survive rule deletion) and recurrence_instance_date. Partial unique index on (recurrence_rule_id, recurrence_instance_date) makes instance materialization idempotent under concurrent triggers/reconciliation.",
-            "Exactly one open instance per series exists at any time: completing it materializes the next occurrence (event-driven, O(1)); a nightly pg-boss reconcile job re-creates the open instance only for series stalled by a crash. No new permissions — recurrence editing is gated by existing task_can_edit_deadline."
+            "Extended tasks.tasks with recurrence_rule_id (FK SET NULL \u2014 instances survive rule deletion) and recurrence_instance_date. Partial unique index on (recurrence_rule_id, recurrence_instance_date) makes instance materialization idempotent under concurrent triggers/reconciliation.",
+            "Exactly one open instance per series exists at any time: completing it materializes the next occurrence (event-driven, O(1)); a nightly pg-boss reconcile job re-creates the open instance only for series stalled by a crash. No new permissions \u2014 recurrence editing is gated by existing task_can_edit_deadline."
         ]
     },
     "48": {
@@ -627,7 +627,7 @@
             "/1.54.1/0.add-recurrence-template-task-unique.sql"
         ],
         "description": [
-            "Partial unique index on tasks.recurrence_rules(template_task_id) WHERE state != 'ended' — one live series per origin task. DB-level backstop for the createRule race where two concurrent POSTs both pass the recurrenceRuleId == null check and create two rules for the same task (the orphaned rule would materialize a duplicate card via the nightly reconcile job)."
+            "Partial unique index on tasks.recurrence_rules(template_task_id) WHERE state != 'ended' \u2014 one live series per origin task. DB-level backstop for the createRule race where two concurrent POSTs both pass the recurrenceRuleId == null check and create two rules for the same task (the orphaned rule would materialize a duplicate card via the nightly reconcile job)."
         ]
     },
     "49": {
@@ -638,7 +638,7 @@
             "/1.54.2/0.add-recurrence-has-time.sql"
         ],
         "description": [
-            "Added tasks.recurrence_rules.has_time — explicit flag for whether a series is anchored to a wall-clock time or is date-only. Previously the code inferred 'no time' from a midnight dtstart, which silently collapsed an explicit 00:00 series into date-only. Backfill (has_time = dtstart::time <> '00:00:00') reproduces the old inference so existing series keep their behavior; new series carry the flag through from the origin task's start_time (null = date-only, set = timed, including midnight)."
+            "Added tasks.recurrence_rules.has_time \u2014 explicit flag for whether a series is anchored to a wall-clock time or is date-only. Previously the code inferred 'no time' from a midnight dtstart, which silently collapsed an explicit 00:00 series into date-only. Backfill (has_time = dtstart::time <> '00:00:00') reproduces the old inference so existing series keep their behavior; new series carry the flag through from the origin task's start_time (null = date-only, set = timed, including midnight)."
         ]
     },
     "50": {
@@ -651,9 +651,9 @@
             "/1.55.0/2.unique-inbox-per-org.sql"
         ],
         "description": [
-            "Added tasks.goals.is_inbox (BOOLEAN NOT NULL DEFAULT FALSE) — flags a project as the user's personal Inbox. One Inbox per personal organization, auto-created at signup and guarded against deletion and archival in GoalsManager.",
-            "Backfill: for every personal organization without an Inbox, inserts one tasks.goals row (name='Inbox', is_inbox=true, owner=the org owner, organization_id=the org). The existing AFTER INSERT triggers fully provision it like any project — default kanban statuses, the owner added to collaboration, and the default editor/executor roles with their permissions. Idempotent — skips orgs that already have an Inbox.",
-            "Partial unique index goals_one_inbox_per_org_uidx ON tasks.goals (organization_id) WHERE is_inbox — enforces at most one Inbox per organization at the DB level, hardening the check-then-insert against concurrent races."
+            "Added tasks.goals.is_inbox (BOOLEAN NOT NULL DEFAULT FALSE) \u2014 flags a project as the user's personal Inbox. One Inbox per personal organization, auto-created at signup and guarded against deletion and archival in GoalsManager.",
+            "Backfill: for every personal organization without an Inbox, inserts one tasks.goals row (name='Inbox', is_inbox=true, owner=the org owner, organization_id=the org). The existing AFTER INSERT triggers fully provision it like any project \u2014 default kanban statuses, the owner added to collaboration, and the default editor/executor roles with their permissions. Idempotent \u2014 skips orgs that already have an Inbox.",
+            "Partial unique index goals_one_inbox_per_org_uidx ON tasks.goals (organization_id) WHERE is_inbox \u2014 enforces at most one Inbox per organization at the DB level, hardening the check-then-insert against concurrent races."
         ]
     },
     "51": {
@@ -680,7 +680,7 @@
         ],
         "description": [
             "Deduplicate collaboration.users_to_goals rows",
-            "Unique index on (user_id, goal_id) — one membership per user per project"
+            "Unique index on (user_id, goal_id) \u2014 one membership per user per project"
         ]
     },
     "53": {
@@ -702,7 +702,7 @@
             "/1.59.0/0.alter-messaging-identity-add-team.sql"
         ],
         "description": [
-            "Add external_team_id to messaging_identity_map so Slack identities are keyed by (provider, team, user) — prevents cross-workspace identity collision"
+            "Add external_team_id to messaging_identity_map so Slack identities are keyed by (provider, team, user) \u2014 prevents cross-workspace identity collision"
         ]
     },
     "55": {
@@ -748,7 +748,7 @@
         ],
         "description": [
             "SSO configs require proving ownership of email_domain_restriction before login is allowed: DNS TXT taskview-sso-verify=<token> or https://<domain>/.well-known/taskview-sso-verify.txt. Air-gapped installs can skip this for listed domains via SSO_TRUSTED_DOMAINS.",
-            "Replaces the plain UNIQUE(email_domain_restriction) with a partial unique index over verified configs only, so an unverified config can no longer squat a domain and block its real owner — multiple orgs may hold a pending config for the same domain, but only one can verify it (first-to-verify wins)."
+            "Replaces the plain UNIQUE(email_domain_restriction) with a partial unique index over verified configs only, so an unverified config can no longer squat a domain and block its real owner \u2014 multiple orgs may hold a pending config for the same domain, but only one can verify it (first-to-verify wins)."
         ]
     },
     "59": {
@@ -799,6 +799,18 @@
             "Invoices keep JSONB snapshots of the seller and the client plus the project name, so editing a company, a client or deleting a project never changes an issued document. Companies and clients are archived rather than deleted once they have invoices.",
             "New organization-level permission billing_can_manage (group 6) narrows what an API or OAuth token may do on the billing surfaces; access itself requires the organization owner or admin role.",
             "Invoice lifecycle: issued_at, paid_at, voided_at, replaces_invoice_id (void and reissue chain), template_version and totals frozen at issue time (subtotal, discount_amount, tax_amount, total). Status transitions are validated by the API; only drafts can be edited or deleted."
+        ]
+    },
+    "62": {
+        "version": "1.67.0",
+        "name": "Task public shares and comments",
+        "releaseDate": "20261007",
+        "scripts": [
+            "/1.67.0/0.create-task-shares.sql",
+            "/1.67.0/1.create-task-comments.sql"
+        ],
+        "description": [
+            "Public share tokens for tasks (Notion-style share links) and task comments for private modal and public pages."
         ]
     }
 }

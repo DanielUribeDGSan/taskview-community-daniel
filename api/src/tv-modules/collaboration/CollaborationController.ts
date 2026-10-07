@@ -6,8 +6,10 @@ import {
     CollaborationArkTypeAddUser,
     CollaborationArkTypeDeleteUser,
     CollaborationArkTypeFetchUsersForGoal,
+    CollaborationArkTypeResendInvite,
     CollaborationArkTypeToggleUserRoles,
 } from './collaboration.server.types';
+import { InviteEmailDispatcher } from './InviteEmailDispatcher';
 import {
     AddUserArgScheme,
     DeleteUserArgScheme,
@@ -160,5 +162,32 @@ export class CollaborationController {
 
         const users = await req.appUser.collaborationManager.fetchUsersForGoalNew(output.goalId);
         return res.tvJson(users);
+    };
+
+    resendInvite = async (req: Request, res: Response) => {
+        const output = CollaborationArkTypeResendInvite(req.body);
+
+        if (output instanceof type.errors) {
+            return res.status(400).send(output.summary);
+        }
+
+        if (!InviteEmailDispatcher.enabled()) {
+            return res.status(400).send({ inviteEmailDisabled: true });
+        }
+
+        const email = output.email.toLowerCase();
+        const prepared = await req.appUser.collaborationManager.prepareResendInvite(output.goalId, email);
+        if (!prepared) {
+            return res.status(404).end();
+        }
+
+        eventBus.emit('collaboration.userAdded', {
+            goalId: output.goalId,
+            email,
+            initiatorId: req.appUser.getUserData()!.id,
+            locale: this.resolveLocale(req),
+        });
+
+        return res.tvJson(true);
     };
 }

@@ -8,6 +8,13 @@ export const CollaborationArkTypeAddUser = type({
 
 export type CollaborationArgAddUser = typeof CollaborationArkTypeAddUser.infer;
 
+export const CollaborationArkTypeResendInvite = type({
+    goalId: 'number',
+    email: 'string.email',
+});
+
+export type CollaborationArgResendInvite = typeof CollaborationArkTypeResendInvite.infer;
+
 export const CollaborationArkTypeDeleteUser = type({
     goalId: 'number',
     id: 'number',

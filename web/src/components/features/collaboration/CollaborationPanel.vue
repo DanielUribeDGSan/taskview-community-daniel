@@ -31,6 +31,7 @@
             @invite="handleInvite"
             @update-roles="handleUpdateMemberRoles"
             @remove="handleRemoveMember"
+            @resend="handleResendInvite"
           />
         </template>
 
@@ -118,6 +119,27 @@ async function handleInvite(email: string) {
     goalId: projectId.value,
     email,
   })
+}
+
+async function handleResendInvite(email: string) {
+  const toast = useToast()
+  const ok = await collaborationStore.resendCollaborationInvite({
+    goalId: projectId.value,
+    email,
+  })
+  if (ok) {
+    toast.add({
+      title: t('collaboration.members.resendInvite'),
+      description: t('collaboration.members.resendInviteSuccess'),
+      color: 'success',
+    })
+  } else {
+    toast.add({
+      title: t('collaboration.members.resendInvite'),
+      description: t('collaboration.members.resendInviteError'),
+      color: 'error',
+    })
+  }
 }
 
 async function handleUpdateMemberRoles(data: { userId: number; roles: number[] }) {

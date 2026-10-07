@@ -9,15 +9,18 @@ import { CanFetchTasks } from './middlewares/CanFetchTasks';
 import { CanRecoveryTaskHistory } from './middlewares/CanRecoveryTaskHistory';
 import { CanUpdateTask } from './middlewares/CanUpdateTask';
 import { CanUpdateTaskAssigneeNew } from './middlewares/CanUpdateTaskAssigneeNew';
+import { TaskShareController } from '../task-share/TaskShareController';
 import { TasksController } from './TasksController';
 
 export default class TasksRoutes implements Routable {
     private readonly router: ReturnType<typeof Router>;
     private readonly tasksController: TasksController;
+    private readonly taskShareController: TaskShareController;
 
     constructor() {
         this.router = Router();
         this.tasksController = new TasksController();
+        this.taskShareController = new TaskShareController();
         this.initRoutes();
     }
 
@@ -30,6 +33,19 @@ export default class TasksRoutes implements Routable {
          * Fetch tasks (pagination is working properly)
          */
         this.router.get('', [IsLoggedIn, CanFetchTasks], this.tasksController.fetchTasksNew);
+
+        /**
+         * Public share link (create / status / revoke)
+         */
+        this.router.get('/:taskId/share', [IsLoggedIn, CanFetchTask], this.taskShareController.getShare);
+        this.router.post('/:taskId/share', [IsLoggedIn, CanFetchTask], this.taskShareController.createShare);
+        this.router.delete('/:taskId/share', [IsLoggedIn, CanFetchTask], this.taskShareController.revokeShare);
+
+        /**
+         * Task comments (private modal)
+         */
+        this.router.get('/:taskId/comments', [IsLoggedIn, CanFetchTask], this.taskShareController.listComments);
+        this.router.post('/:taskId/comments', [IsLoggedIn, CanFetchTask], this.taskShareController.addComment);
 
         /**
          * Fetch task by id

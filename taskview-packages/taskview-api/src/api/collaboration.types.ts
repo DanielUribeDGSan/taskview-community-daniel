@@ -3,6 +3,11 @@ export type CollaborationArgAddUser = {
     email: string;
 }
 
+export type CollaborationArgResendInvite = {
+    goalId: number;
+    email: string;
+}
+
 export type CollaborationUser = {
     id: number;
     email: string;

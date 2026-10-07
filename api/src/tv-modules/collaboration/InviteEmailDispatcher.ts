@@ -21,6 +21,14 @@ export class InviteEmailDispatcher implements Dispatcher {
         return parsePositiveInt(process.env.INVITE_EMAIL_HOURLY_LIMIT) ?? DEFAULT_HOURLY_LIMIT;
     }
 
+    /** Clears the 24h per-(goal, email) cooldown so an intentional resend can go out. */
+    static async clearCooldown(goalId: number, email: string): Promise<void> {
+        const db = Database.getInstance();
+        await db.dbDrizzle
+            .delete(InviteEmailsSchema)
+            .where(and(eq(InviteEmailsSchema.goalId, goalId), eq(InviteEmailsSchema.email, email.toLowerCase())));
+    }
+
     static validateOnStartup(): void {
         const enabledRaw = process.env.INVITE_EMAIL_ENABLED;
         if (enabledRaw !== undefined && enabledRaw.trim() !== '') {

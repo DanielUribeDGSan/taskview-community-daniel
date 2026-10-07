@@ -36,7 +36,7 @@
         :list="kanbanStore.tasksData[status.id]?.tasks"
         :data-column-id="status.id"
         :animation="150"
-        class="flex gap-2 p-2 h-full flex-col overflow-auto overflow-x-hidden"
+        class="tv-kanban-column flex gap-2 p-2 h-full flex-col overflow-auto overflow-x-hidden"
         item-key="id"
         group="kanban-tasks"
         @start="startHandler"
@@ -48,6 +48,7 @@
             :data-order="element.kanbanOrder"
             :data-task-id="element.id"
             data-testid="kanban-task-card"
+            class="tv-kanban-card select-none"
           >
             <TaskItem
               :task="element"
@@ -109,14 +110,21 @@ let dragStartPositionX: number | null = null
 let speedDelta = 0
 
 const sortableOptions = computed(() => ({
-  delay: 100,
-  delayOnTouchOnly: false,
+  // Delay only on touch — with mouse a delay races the browser text-selection
+  // and the card "underlines"/highlights instead of dragging.
+  delay: 150,
+  delayOnTouchOnly: true,
   forceFallback: true,
+  fallbackOnBody: true,
+  fallbackTolerance: 3,
   swapThreshold: 1,
   scroll: true,
   scrollSensitivity: 50,
   scrollSpeed: 10,
   disabled: !canManageKanban.value,
+  ghostClass: 'tv-kanban-ghost',
+  chosenClass: 'tv-kanban-chosen',
+  dragClass: 'tv-kanban-drag',
 }))
 
 const initLoadTasksForEachColumn = async () => {
@@ -311,3 +319,23 @@ onUnmounted(() => {
   boardStopScrolling()
 })
 </script>
+
+<style scoped>
+.tv-kanban-card {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  cursor: grab;
+}
+
+.tv-kanban-card:active {
+  cursor: grabbing;
+}
+
+:global(.tv-kanban-chosen),
+:global(.tv-kanban-drag),
+:global(.tv-kanban-ghost) {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+</style>

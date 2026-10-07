@@ -35,6 +35,15 @@ export default class CollaborationRoutes implements Routable {
         this.router.post('', [IsLoggedIn, CanAddUserCollaboration], this.collaborationController.addUserNew);
 
         /**
+         * Resend invite email to an existing collaborator
+         */
+        this.router.post(
+            '/resend-invite',
+            [IsLoggedIn, CanAddUserCollaboration],
+            this.collaborationController.resendInvite
+        );
+
+        /**
          * Delete user from goal for collaboration
          */
         this.router.delete('', [IsLoggedIn, CanDeleteUserCollaboration], this.collaborationController.deleteUserNew);

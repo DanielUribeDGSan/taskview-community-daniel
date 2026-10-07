@@ -54,6 +54,16 @@
           class="w-full justify-start"
           @click="openEditModal"
         />
+        <UButton
+          :label="t('collaboration.members.resendInvite')"
+          data-testid="collab-member-resend-invite"
+          icon="i-lucide-mail"
+          variant="ghost"
+          color="neutral"
+          class="w-full justify-start"
+          :loading="resending"
+          @click="handleResend"
+        />
         <USeparator class="my-1" />
         <UButton
           :label="t('collaboration.members.remove')"
@@ -102,6 +112,7 @@ const emit = defineEmits<{
   invite: [email: string]
   updateRoles: [data: { userId: number; roles: number[] }]
   remove: [userId: number]
+  resend: [email: string]
 }>()
 
 const { t } = useI18n()
@@ -109,6 +120,7 @@ const { t } = useI18n()
 const contextMenu = ref<InstanceType<typeof TvContextMenu> | null>(null)
 const selectedMember = ref<CollaborationResponseFetchAllUsers | null>(null)
 const isEditModalOpen = ref(false)
+const resending = ref(false)
 
 function openContextMenu(event: MouseEvent, member: CollaborationResponseFetchAllUsers) {
   selectedMember.value = member
@@ -122,6 +134,14 @@ function openEditModal() {
 
 function handleUpdateRoles(data: { userId: number; roles: number[] }) {
   emit('updateRoles', data)
+}
+
+function handleResend() {
+  if (!selectedMember.value) return
+  resending.value = true
+  emit('resend', selectedMember.value.email)
+  contextMenu.value?.close()
+  resending.value = false
 }
 
 function handleRemove() {

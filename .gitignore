@@ -16,6 +16,7 @@ update-taskview.sh
 *.sh
 !build-docker.sh
 !upload-server.sh
+!deploy/oracle/deploy.sh
 dist
 mobile/SDK
 cache

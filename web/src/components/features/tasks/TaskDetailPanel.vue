@@ -142,6 +142,12 @@
           />
         </template>
       </div>
+
+      <TaskComments
+        v-if="task"
+        :task-id="task.id"
+        class="@lg:col-span-2"
+      />
       <br />
     </template>
 
@@ -163,6 +169,7 @@ import { useDebounceFn } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { useTasksStore } from '@/stores/tasks.store'
 import NoteEditor from '@/components/features/tasks/parts/NoteEditor.vue'
+import TaskComments from '@/components/features/tasks/parts/TaskComments.vue'
 import TvPriority from '@/components/features/base/TvPriority.vue'
 import TaskTagsManager from '@/components/features/tasks/parts/tags/TaskTagsManager.vue'
 import TaskAssigneeSelect from '@/components/features/tasks/parts/TaskAssigneeSelect.vue'

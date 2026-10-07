@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import type {
   CollaborationArgAddUser,
   CollaborationArgDeleteUser,
+  CollaborationArgResendInvite,
   CollaborationArgToggleUserRoles,
   GoalItem,
 } from 'taskview-api'
@@ -51,6 +52,11 @@ export const useCollaborationStore = defineStore('collaboration', {
       this.users.push(result)
       this.allUsers.push(result)
       return true
+    },
+
+    async resendCollaborationInvite(data: CollaborationArgResendInvite): Promise<boolean> {
+      const result = await $tvApi.collaboration.resendInvite(data)
+      return !!result
     },
 
     async deleteUserFromCollaboration(data: CollaborationArgDeleteUser): Promise<void> {

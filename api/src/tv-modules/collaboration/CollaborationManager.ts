@@ -15,6 +15,7 @@ import type {
     FetchGoalUsersArg,
     ToggleUserRolesArg,
 } from './collaboration.types';
+import { InviteEmailDispatcher } from './InviteEmailDispatcher';
 
 export class CollaborationManager {
     private readonly user: AppUser;
@@ -240,5 +241,21 @@ export class CollaborationManager {
         });
 
         return Object.values(resultMap);
+    }
+
+    /**
+     * Prepare a resend of the invite email for an existing collaborator.
+     * Returns false if the email is not currently invited on the goal.
+     */
+    async prepareResendInvite(goalId: number, email: string): Promise<boolean> {
+        const normalized = email.toLowerCase();
+        const users = await this.fetchUsersForGoalNew(goalId);
+        const member = users.find((u) => u.email.toLowerCase() === normalized);
+        if (!member || member.goalOwner) {
+            return false;
+        }
+
+        await InviteEmailDispatcher.clearCooldown(goalId, normalized);
+        return true;
     }
 }

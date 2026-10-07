@@ -7,7 +7,7 @@
       :ui="{ body: 'p-4!' }"
     >
       <template #header>
-        <div class="flex items-center justify-between w-full">
+        <div class="flex items-center justify-between w-full gap-2">
           <UButton
             icon="i-lucide-arrow-left"
             color="neutral"
@@ -15,9 +15,13 @@
             size="sm"
             @click="closeTask"
           />
-          <h3 class="font-semibold">
+          <h3 class="font-semibold flex-1 text-center">
             {{ t('tasks.details') }}
           </h3>
+          <TaskShareMenu
+            v-if="task"
+            :task-id="task.id"
+          />
         </div>
       </template>
 
@@ -57,17 +61,23 @@
       }"
     >
       <template #header>
-        <div class="flex items-center justify-between w-full">
-          <h3 class="font-semibold">
+        <div class="flex items-center justify-between w-full gap-2">
+          <h3 class="font-semibold flex-1">
             {{ t('tasks.details') }}
           </h3>
-          <UButton
-            icon="i-lucide-x"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            @click="closeTask"
-          />
+          <div class="flex items-center gap-1">
+            <TaskShareMenu
+              v-if="task"
+              :task-id="task.id"
+            />
+            <UButton
+              icon="i-lucide-x"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              @click="closeTask"
+            />
+          </div>
         </div>
       </template>
 
@@ -108,6 +118,7 @@ import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import TaskDetailPanel from './TaskDetailPanel.vue'
+import TaskShareMenu from '@/components/features/tasks/parts/TaskShareMenu.vue'
 import TaskDeleteDialog from '@/components/features/tasks/parts/TaskDeleteDialog.vue'
 import { useTasksStore } from '@/stores/tasks.store'
 import { useGoalsStore } from '@/stores/goals.store'
