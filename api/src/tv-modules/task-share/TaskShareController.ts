@@ -93,7 +93,8 @@ export class TaskShareController {
         const checked = Boolean(req.body?.checked);
         if (!Number.isInteger(itemIndex) || itemIndex < 0) return res.status(400).end();
 
-        const result = await this.manager.togglePublicChecklist(token, itemIndex, checked);
+        const user = req.appUser.getHasActiveToken() ? req.appUser.getUserData() : null;
+        const result = await this.manager.togglePublicChecklist(token, itemIndex, checked, user);
         if (!result) return res.status(400).end();
         return res.tvJson(result);
     };

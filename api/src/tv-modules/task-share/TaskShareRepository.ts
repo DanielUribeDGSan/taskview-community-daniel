@@ -11,6 +11,7 @@ import {
     TaskSharesSchema,
     TasksAssigneeSchema,
     TagsSchema,
+    UsersSchema,
 } from 'taskview-db-schemas';
 import { Database } from '../../modules/db';
 import { callWithCatch } from '../../utils/helpers';
@@ -206,5 +207,62 @@ export class TaskShareRepository {
                 .returning()
         );
         return rows?.[0] ?? null;
+    }
+
+    async fetchUser(userId: number | null) {
+        if (!userId) return null;
+        const rows = await callWithCatch(() =>
+            this.db.dbDrizzle
+                .select({ id: UsersSchema.id, email: UsersSchema.email, login: UsersSchema.login })
+                .from(UsersSchema)
+                .where(eq(UsersSchema.id, userId))
+                .limit(1)
+        );
+        return rows?.[0] ?? null;
+    }
+
+    async fetchTaskHistoryLogs(taskId: number, limit = 20) {
+        const query = `
+            SELECT id, task_id as "taskId", user_id as "userId", user_email as "userEmail",
+                   user_name as "userName", action, details, created_at as "createdAt"
+            FROM tasks.task_history_logs
+            WHERE task_id = $1
+            ORDER BY created_at DESC, id DESC
+            LIMIT $2
+        `;
+        const result = await this.db.query(query, [taskId, limit]).catch(() => null);
+        return (result?.rows ?? []) as Array<{
+            id: number;
+            taskId: number;
+            userId: number | null;
+            userEmail: string | null;
+            userName: string | null;
+            action: string;
+            details: string | null;
+            createdAt: Date | string;
+        }>;
+    }
+
+    async logTaskHistory(args: {
+        taskId: number;
+        userId?: number | null;
+        userEmail?: string | null;
+        userName?: string | null;
+        action: string;
+        details?: string | null;
+    }) {
+        const query = `
+            INSERT INTO tasks.task_history_logs (task_id, user_id, user_email, user_name, action, details)
+            VALUES ($1, $2, $3, $4, $5, $6)
+        `;
+        const result = await this.db.query(query, [
+            args.taskId,
+            args.userId ?? null,
+            args.userEmail ?? null,
+            args.userName ?? null,
+            args.action,
+            args.details ?? null,
+        ]).catch(() => null);
+        return !!result;
     }
 }

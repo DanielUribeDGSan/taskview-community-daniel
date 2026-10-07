@@ -17,6 +17,23 @@ export type TaskComment = {
     createdAt: string | Date
 }
 
+export type TaskHistoryEntry = {
+    id: number
+    action: string
+    details: string | null
+    userEmail: string | null
+    userName: string | null
+    createdAt: string | Date
+}
+
+export type TaskLastModified = {
+    userEmail: string | null
+    userName: string | null
+    action: string | null
+    details: string | null
+    at: string | Date
+}
+
 export type PublicSharedTask = {
     task: {
         id: number
@@ -56,5 +73,7 @@ export type PublicSharedTask = {
         endDate: string | null
     }[]
     comments: TaskComment[]
+    history?: TaskHistoryEntry[]
+    lastModified?: TaskLastModified | null
     share: { token: string }
 }

@@ -47,6 +47,21 @@ export type PublicTaskPayload = {
         authorUserId: number | null;
         createdAt: Date | string;
     }[];
+    history: {
+        id: number;
+        action: string;
+        details: string | null;
+        userEmail: string | null;
+        userName: string | null;
+        createdAt: Date | string;
+    }[];
+    lastModified: {
+        userEmail: string | null;
+        userName: string | null;
+        action: string | null;
+        details: string | null;
+        at: Date | string;
+    } | null;
     share: { token: string };
 };
 
@@ -100,7 +115,7 @@ export class TaskShareManager {
         const task = await this.repository.fetchTask(share.taskId);
         if (!task) return null;
 
-        const [goal, status, list, sprint, tags, assignees, subtasks, comments] = await Promise.all([
+        const [goal, status, list, sprint, tags, assignees, subtasks, comments, history] = await Promise.all([
             this.repository.fetchGoal(task.goalId),
             this.repository.fetchStatus(task.statusId),
             this.repository.fetchList(task.goalListId),
@@ -109,7 +124,32 @@ export class TaskShareManager {
             this.repository.fetchAssignees(task.id),
             this.repository.fetchSubtasks(task.id),
             this.repository.listComments(task.id),
+            this.repository.fetchTaskHistoryLogs(task.id),
         ]);
+
+        const creatorUser =
+            task.owner || task.creatorId
+                ? await this.repository.fetchUser(task.owner || task.creatorId)
+                : null;
+
+        const lastModified =
+            history.length > 0
+                ? {
+                      userEmail: history[0].userEmail,
+                      userName: history[0].userName,
+                      action: history[0].action,
+                      details: history[0].details,
+                      at: history[0].createdAt,
+                  }
+                : creatorUser
+                ? {
+                      userEmail: creatorUser.email,
+                      userName: creatorUser.login || creatorUser.email,
+                      action: 'created',
+                      details: 'Creado por el usuario',
+                      at: (task as any).edit_date || (task as any).date_creation || new Date(),
+                  }
+                : null;
 
         return {
             task: {
@@ -152,6 +192,15 @@ export class TaskShareManager {
                 authorUserId: c.authorUserId,
                 createdAt: c.createdAt,
             })),
+            history: history.map((h) => ({
+                id: h.id,
+                action: h.action,
+                details: h.details,
+                userEmail: h.userEmail,
+                userName: h.userName,
+                createdAt: h.createdAt,
+            })),
+            lastModified,
             share: { token: share.token },
         };
     }
@@ -189,7 +238,12 @@ export class TaskShareManager {
         });
     }
 
-    async togglePublicChecklist(token: string, itemIndex: number, checked: boolean) {
+    async togglePublicChecklist(
+        token: string,
+        itemIndex: number,
+        checked: boolean,
+        user?: { id: number; email: string; login: string } | null
+    ) {
         const share = await this.repository.findActiveShareByToken(token);
         if (!share) return null;
         const task = await this.repository.fetchTask(share.taskId);
@@ -200,6 +254,16 @@ export class TaskShareManager {
 
         const updated = await this.repository.updateTaskNote(task.id, nextNote);
         if (!updated) return null;
+
+        await this.repository.logTaskHistory({
+            taskId: task.id,
+            userId: user?.id ?? null,
+            userEmail: user?.email ?? null,
+            userName: user?.login || user?.email || 'Invitado (enlace público)',
+            action: 'checklist_toggled',
+            details: checked ? 'Marcó casilla de verificación' : 'Desmarcó casilla de verificación',
+        });
+
         return { note: updated.note };
     }
 }

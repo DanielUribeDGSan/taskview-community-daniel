@@ -407,6 +407,19 @@ export class TasksController {
         const isVideo = file.mimetype.startsWith('video/');
         const url = `/module/tasks/media/${file.filename}`;
 
+        const taskId = req.body?.taskId ? Number(req.body.taskId) : null;
+        const user = req.appUser?.getUserData();
+        if (taskId && user) {
+            await req.appUser.tasksManager.repository.logTaskHistory({
+                taskId,
+                userId: user.id,
+                userEmail: user.email,
+                userName: user.login || user.email,
+                action: isVideo ? 'video_uploaded' : 'image_uploaded',
+                details: isVideo ? `Subió un video: ${file.originalname}` : `Subió una imagen: ${file.originalname}`,
+            }).catch(() => null);
+        }
+
         return res.tvJson({
             url,
             filename: file.filename,

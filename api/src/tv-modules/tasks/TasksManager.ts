@@ -288,6 +288,37 @@ export class TasksManager {
             initiatorId: this.user.getUserData()?.id as number,
         });
 
+        const user = this.user.getUserData();
+        if (user) {
+            let action = 'task_updated';
+            let details = 'Actualizó la tarea';
+            if (data.note !== undefined) {
+                action = 'note_updated';
+                details = 'Modificó la nota (texto, imágenes o formato)';
+            } else if (data.description !== undefined) {
+                action = 'title_updated';
+                details = `Modificó el título: "${data.description}"`;
+            } else if (data.complete !== undefined) {
+                action = 'complete_updated';
+                details = data.complete ? 'Completó la tarea' : 'Marcó la tarea como pendiente';
+            } else if (data.statusId !== undefined) {
+                action = 'status_updated';
+                details = 'Cambió el estado';
+            } else if (data.priorityId !== undefined) {
+                action = 'priority_updated';
+                details = 'Cambió la prioridad';
+            }
+
+            await this.repository.logTaskHistory({
+                taskId: data.id,
+                userId: user.id,
+                userEmail: user.email,
+                userName: user.login || user.email,
+                action,
+                details,
+            }).catch(() => null);
+        }
+
         const tasks = await this.extendTasksWithTagsAndAssignees([task]);
         const result = tasks[0] ?? null;
         if (!result) return null;

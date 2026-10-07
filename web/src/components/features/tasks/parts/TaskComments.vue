@@ -52,8 +52,18 @@
       class="flex flex-col gap-2"
       @submit.prevent="submit"
     >
+      <div
+        v-if="userStore.isLoggedIn"
+        class="flex items-center gap-1.5 text-xs text-muted px-1"
+      >
+        <UIcon
+          name="i-lucide-user-check"
+          class="size-3.5 text-primary"
+        />
+        <span>{{ t('tasks.comments.commentingAs') || 'Comentando como' }}: <strong class="text-default font-medium">{{ userStore.email || userStore.login }}</strong></span>
+      </div>
       <UInput
-        v-if="askName"
+        v-else-if="askName"
         v-model="authorName"
         :placeholder="t('tasks.comments.namePlaceholder')"
         data-testid="task-comment-name"
@@ -84,7 +94,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { TaskComment } from 'taskview-api'
-import { $tvApi } from '@/plugins/axios'
+import { $ls, $tvApi } from '@/plugins/axios'
 import { logError } from '@/helpers/Helper'
 import { useUserStore } from '@/stores/user.store'
 
@@ -111,7 +121,7 @@ const authorName = ref('')
 const loading = ref(false)
 const sending = ref(false)
 
-const askName = computed(() => props.askName ?? !userStore.isLoggedIn)
+const askName = computed(() => !userStore.isLoggedIn && (props.askName ?? true))
 
 const canSubmit = computed(() => {
   const hasBody = body.value.trim().length > 0
@@ -146,9 +156,9 @@ async function load() {
 async function submit() {
   if (!canSubmit.value) return
   const text = body.value.trim()
-  const name = askName.value
-    ? authorName.value.trim()
-    : (userStore.login || userStore.email || 'User')
+  const name = userStore.isLoggedIn
+    ? (userStore.email || userStore.login || 'User')
+    : authorName.value.trim()
 
   sending.value = true
   let result: { comment: TaskComment } | null | undefined
@@ -188,7 +198,8 @@ watch(() => props.initialComments, (next) => {
   if (next) comments.value = next
 })
 
-onMounted(() => {
+onMounted(async () => {
+  await $ls?.updateUserStoreByToken().catch(() => null)
   if (askName.value) {
     authorName.value = localStorage.getItem(GUEST_NAME_KEY) ?? ''
   }

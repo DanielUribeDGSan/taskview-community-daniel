@@ -807,10 +807,11 @@
         "releaseDate": "20261007",
         "scripts": [
             "/1.67.0/0.create-task-shares.sql",
-            "/1.67.0/1.create-task-comments.sql"
+            "/1.67.0/1.create-task-comments.sql",
+            "/1.67.0/2.create-task-history-logs.sql"
         ],
         "description": [
-            "Public share tokens for tasks (Notion-style share links) and task comments for private modal and public pages."
+            "Public share tokens for tasks (Notion-style share links), task comments, and task change history activity logs."
         ]
     }
 }

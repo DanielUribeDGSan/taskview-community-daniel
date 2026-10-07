@@ -549,6 +549,29 @@ export class TasksRepository {
         return result?.[0] ?? null;
     }
 
+    async logTaskHistory(args: {
+        taskId: number;
+        userId?: number | null;
+        userEmail?: string | null;
+        userName?: string | null;
+        action: string;
+        details?: string | null;
+    }): Promise<boolean> {
+        const query = `
+            INSERT INTO tasks.task_history_logs (task_id, user_id, user_email, user_name, action, details)
+            VALUES ($1, $2, $3, $4, $5, $6)
+        `;
+        const result = await this.db.query(query, [
+            args.taskId,
+            args.userId ?? null,
+            args.userEmail ?? null,
+            args.userName ?? null,
+            args.action,
+            args.details ?? null,
+        ]).catch(() => null);
+        return !!result;
+    }
+
     async fetch(data: TaskArgFetchTasksNew): Promise<TasksSchemaTypeForSelect[]> {
         const now = performance.now();
 

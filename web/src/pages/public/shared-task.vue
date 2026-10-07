@@ -184,10 +184,79 @@
           />
         </section>
 
+        <!-- Historial de cambios / Actividad -->
+        <div
+          v-if="payload.history?.length || payload.lastModified"
+          class="flex flex-col gap-3 border border-default rounded-2xl p-3.5 dark:bg-tv-ui-bg-elevated"
+          data-testid="task-history"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-sm font-medium">
+              <UIcon
+                name="i-lucide-history"
+                class="size-4 text-primary"
+              />
+              <span>{{ t('tasks.history.title') || 'Historial de cambios' }}</span>
+              <span
+                v-if="payload.history?.length"
+                class="text-muted font-normal text-xs"
+              >({{ payload.history.length }})</span>
+            </div>
+            <span
+              v-if="payload.lastModified"
+              class="text-xs text-muted"
+            >
+              {{ t('tasks.history.lastChangeBy') || 'Último cambio por' }}:
+              <strong class="text-default font-medium">{{ payload.lastModified.userEmail || payload.lastModified.userName || 'Usuario' }}</strong>
+            </span>
+          </div>
+
+          <!-- Último cambio destacado si existe -->
+          <div
+            v-if="payload.lastModified"
+            class="flex items-center gap-2 text-xs bg-default/40 border border-default/60 rounded-xl px-3 py-2"
+          >
+            <UIcon
+              name="i-lucide-sparkles"
+              class="size-3.5 text-primary shrink-0"
+            />
+            <span class="flex-1">
+              <strong>{{ payload.lastModified.userEmail || payload.lastModified.userName || 'Usuario' }}</strong>:
+              {{ payload.lastModified.details || getHistoryActionLabel(payload.lastModified.action || '') }}
+              · <span class="text-muted">{{ formatDate(payload.lastModified.at) }}</span>
+            </span>
+          </div>
+
+          <!-- Lista detallada del historial -->
+          <ul
+            v-if="payload.history?.length"
+            class="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1 mt-1"
+          >
+            <li
+              v-for="entry in payload.history"
+              :key="entry.id"
+              class="flex items-start justify-between gap-3 text-xs border-b border-default/40 pb-2 last:border-b-0 last:pb-0"
+            >
+              <div class="flex items-start gap-2 min-w-0">
+                <UIcon
+                  :name="getHistoryActionIcon(entry.action)"
+                  class="size-3.5 text-primary shrink-0 mt-0.5"
+                />
+                <div class="flex flex-col min-w-0">
+                  <div class="flex items-baseline gap-1.5 flex-wrap">
+                    <span class="font-medium text-default">{{ entry.userEmail || entry.userName || 'Usuario' }}</span>
+                    <span class="text-muted">{{ entry.details || getHistoryActionLabel(entry.action) }}</span>
+                  </div>
+                </div>
+              </div>
+              <span class="text-muted shrink-0 text-[11px]">{{ formatDate(entry.createdAt) }}</span>
+            </li>
+          </ul>
+        </div>
+
         <TaskComments
           :token="token"
           :initial-comments="payload.comments"
-          ask-name
         />
       </article>
     </main>
@@ -199,7 +268,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import type { PublicSharedTask } from 'taskview-api'
-import { $tvApi } from '@/plugins/axios'
+import { $ls, $tvApi } from '@/plugins/axios'
 import { logError } from '@/helpers/Helper'
 import { usePriorityOptions } from '@/composables/usePriorityOptions'
 import NoteEditor from '@/components/features/tasks/parts/NoteEditor.vue'
@@ -228,6 +297,37 @@ const deadlineLabel = computed(() => {
   const time = payload.value?.task.endTime
   return time ? `${end} ${time}` : end
 })
+
+function formatDate(value: string | Date | undefined) {
+  if (!value) return ''
+  try {
+    return new Date(value).toLocaleString()
+  } catch {
+    return String(value)
+  }
+}
+
+function getHistoryActionIcon(action: string) {
+  if (action === 'image_uploaded' || action === 'video_uploaded') return 'i-lucide-image'
+  if (action === 'note_updated') return 'i-lucide-file-text'
+  if (action === 'title_updated') return 'i-lucide-edit-3'
+  if (action === 'checklist_toggled' || action === 'complete_updated') return 'i-lucide-check-circle-2'
+  if (action === 'status_updated') return 'i-lucide-columns-3'
+  if (action === 'priority_updated') return 'i-lucide-flag'
+  return 'i-lucide-clock'
+}
+
+function getHistoryActionLabel(action: string) {
+  if (action === 'image_uploaded') return 'Subió una imagen'
+  if (action === 'video_uploaded') return 'Subió un video'
+  if (action === 'note_updated') return 'Modificó la nota'
+  if (action === 'title_updated') return 'Modificó el título'
+  if (action === 'checklist_toggled') return 'Actualizó una casilla'
+  if (action === 'complete_updated') return 'Actualizó el estado de completado'
+  if (action === 'status_updated') return 'Cambió de estado'
+  if (action === 'priority_updated') return 'Cambió de prioridad'
+  return 'Realizó un cambio'
+}
 
 async function load() {
   loading.value = true
@@ -260,10 +360,13 @@ async function onChecklistToggle({ itemIndex, checked }: { itemIndex: number; ch
       task: { ...payload.value.task, note: result.note },
     }
     noteKey.value += 1
+    // Reload full payload to update history with new checklist event
+    void load()
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await $ls?.updateUserStoreByToken().catch(() => null)
   void load()
 })
 </script>

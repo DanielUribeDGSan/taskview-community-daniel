@@ -115,6 +115,7 @@ const {
 } = useGoalPermissions()
 
 const props = withDefaults(defineProps<{
+  taskId?: number
   content: string
   contentType?: 'html' | 'markdown'
   placeholder?: string
@@ -353,7 +354,7 @@ async function processAndInsertFile(file: File) {
   })
 
   try {
-    const media = await taskApi.uploadMedia(file)
+    const media = await taskApi.uploadMedia(file, props.taskId)
     if (!media?.url) {
       throw new Error('Respuesta inválida del servidor')
     }
