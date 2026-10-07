@@ -9,6 +9,7 @@
         :class="[
           isFullscreen ? 'flex flex-col flex-1 min-h-0' : 'border border-default rounded-2xl',
           isDraggingOver ? 'is-drag-over' : '',
+          (autoGrow || hideFooter) ? 'is-auto-grow overflow-visible' : '',
         ]"
         data-testid="task-note-editor"
         @dragover="onDragOver"
@@ -48,7 +49,7 @@
           :placeholder="placeholder"
           :extensions="extensions"
           :editable="isEditable"
-          :class="isFullscreen ? 'flex flex-col flex-1 min-h-0' : 'min-h-32'"
+          :class="isFullscreen ? 'flex flex-col flex-1 min-h-0' : ((autoGrow || hideFooter) ? 'min-h-0' : 'min-h-32')"
           :ui="{ content: contentClass }"
           @update:model-value="handleUpdate"
         >
@@ -61,7 +62,7 @@
           />
         </UEditor>
         <NoteEditorFooter
-          v-if="isOverflowing && !hideFooter"
+          v-if="isOverflowing && !hideFooter && !autoGrow"
           :expanded="isExpanded"
           @toggle-expand="toggleExpanded"
           @fullscreen="toggleFullscreen"
@@ -124,6 +125,8 @@ const props = withDefaults(defineProps<{
   allowReadonlyChecklist?: boolean
   hideFooter?: boolean
   forceVisible?: boolean
+  /** Whether the editor should grow naturally with content without fixed height or scrollbar */
+  autoGrow?: boolean
 }>(), {
   contentType: 'html',
   debounce: 500,
@@ -131,6 +134,7 @@ const props = withDefaults(defineProps<{
   allowReadonlyChecklist: false,
   hideFooter: false,
   forceVisible: false,
+  autoGrow: false,
 })
 
 const emit = defineEmits<{
@@ -241,6 +245,7 @@ const { isOverflowing, isCollapsed, isExpanded, toggleExpanded } = useNoteEditor
 
 const contentClass = computed(() => {
   if (isFullscreen.value) return 'flex-1 min-h-0 overflow-y-auto'
+  if (props.autoGrow || props.hideFooter) return ''
   if (isCollapsed.value) return 'max-h-80 overflow-y-auto'
   return ''
 })

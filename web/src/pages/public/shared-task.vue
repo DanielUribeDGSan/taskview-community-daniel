@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-default">
     <header class="border-b border-default sticky top-0 z-10 bg-default/95 backdrop-blur">
-      <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
         <div class="min-w-0">
           <p class="text-xs text-muted truncate">
             {{ payload?.goal?.name || t('tasks.share.publicBadge') }}
@@ -20,7 +20,7 @@
       </div>
     </header>
 
-    <main class="max-w-3xl mx-auto px-4 py-8">
+    <main class="max-w-4xl mx-auto px-4 py-8">
       <div
         v-if="loading"
         class="text-muted"
@@ -179,6 +179,7 @@
             allow-readonly-checklist
             force-visible
             hide-footer
+            auto-grow
             @checklist-toggle="onChecklistToggle"
           />
         </section>
