@@ -1,6 +1,9 @@
 import { type } from 'arktype';
+import path from 'path';
+import fs from 'fs';
 import type { Request, Response } from 'express';
 import { $logger } from '../../modules/logget';
+import { MEDIA_UPLOAD_DIR } from './media.utils';
 import {
     AddTaskArgSchema,
     DeleteTaskArgScheme,
@@ -393,5 +396,41 @@ export class TasksController {
         }
 
         return res.tvJson({ delete: await req.appUser.tasksManager.deleteTaskNew(args) });
+    };
+
+    uploadMedia = async (req: Request, res: Response) => {
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({ message: 'No file provided or file exceeds size limit' });
+        }
+
+        const isVideo = file.mimetype.startsWith('video/');
+        const url = `/module/tasks/media/${file.filename}`;
+
+        return res.tvJson({
+            url,
+            filename: file.filename,
+            originalName: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size,
+            type: isVideo ? 'video' : 'image',
+        });
+    };
+
+    serveMedia = async (req: Request, res: Response) => {
+        const rawFilename = req.params.filename;
+        if (!rawFilename) {
+            return res.status(404).send('File not found');
+        }
+
+        const safeFilename = path.basename(rawFilename);
+        const filePath = path.join(MEDIA_UPLOAD_DIR, safeFilename);
+
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).send('File not found');
+        }
+
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return res.sendFile(filePath);
     };
 }

@@ -130,7 +130,7 @@ export class TaskShareManager {
                 estimateValue: task.estimateValue,
                 sourceUrl: task.sourceUrl,
             },
-            goal: goal ? { id: goal.id, name: goal.name } : null,
+            goal: goal ? { id: goal.id, name: goal.name || '' } : null,
             status,
             list,
             sprint: sprint

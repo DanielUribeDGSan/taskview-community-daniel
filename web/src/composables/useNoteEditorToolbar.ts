@@ -161,8 +161,63 @@ const alignItems: EditorToolbarItem[] = [{
   }],
 }]
 
-export function useNoteEditorToolbar({ isFullscreen, onToggleFullscreen }: UseNoteEditorToolbarArgs) {
+export function useNoteEditorToolbar({
+  isFullscreen,
+  onToggleFullscreen,
+  onSetHighlight,
+  onUnsetHighlight,
+  onTriggerMediaUpload,
+}: UseNoteEditorToolbarArgs) {
   const { t } = useI18n()
+
+  const highlightItems = computed<EditorToolbarItem[]>(() => [{
+    icon: 'i-lucide-highlighter',
+    tooltip: { text: t('tasks.noteHighlight') },
+    content: {
+      align: 'start',
+    },
+    items: [{
+      label: 'Amarillo',
+      icon: 'i-lucide-circle',
+      onSelect: () => onSetHighlight?.('#fef08a'),
+    }, {
+      label: 'Verde',
+      icon: 'i-lucide-circle',
+      onSelect: () => onSetHighlight?.('#bbf7d0'),
+    }, {
+      label: 'Azul',
+      icon: 'i-lucide-circle',
+      onSelect: () => onSetHighlight?.('#bfdbfe'),
+    }, {
+      label: 'Morado',
+      icon: 'i-lucide-circle',
+      onSelect: () => onSetHighlight?.('#e9d5ff'),
+    }, {
+      label: 'Rosa',
+      icon: 'i-lucide-circle',
+      onSelect: () => onSetHighlight?.('#fbcfe8'),
+    }, {
+      label: 'Naranja',
+      icon: 'i-lucide-circle',
+      onSelect: () => onSetHighlight?.('#fed7aa'),
+    }, {
+      label: 'Rojo',
+      icon: 'i-lucide-circle',
+      onSelect: () => onSetHighlight?.('#fecaca'),
+    }, {
+      label: 'Quitar color',
+      icon: 'i-lucide-eraser',
+      onSelect: () => onUnsetHighlight?.(),
+    }],
+  }])
+
+  const mediaItems = computed<EditorToolbarItem[]>(() => [{
+    icon: 'i-lucide-image',
+    tooltip: { text: 'Subir imagen, GIF o video (máx 40MB)' },
+    'aria-label': 'Subir imagen, GIF o video',
+    ui: itemUi,
+    onClick: onTriggerMediaUpload,
+  }])
 
   const fullscreenItems = computed<EditorToolbarItem[]>(() => [{
     icon: isFullscreen.value ? 'i-lucide-minimize-2' : 'i-lucide-maximize-2',
@@ -175,8 +230,8 @@ export function useNoteEditorToolbar({ isFullscreen, onToggleFullscreen }: UseNo
   const toolbarItems = computed<EditorToolbarItem[][]>(() => [
     historyItems,
     blockItems,
-    markItems,
-    linkItems,
+    [...markItems, ...highlightItems.value],
+    [...linkItems, ...mediaItems.value],
     alignItems,
     fullscreenItems.value,
   ])

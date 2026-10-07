@@ -519,6 +519,8 @@ export default {
     noteExitFullscreen: 'Salir de pantalla completa',
     noteExpand: 'Expandir',
     noteCollapse: 'Contraer',
+    noteHighlight: 'Subrayar / Resaltar color',
+    noteDropMedia: 'Suelta aquí imágenes, GIFs o videos (máx 40MB)',
     share: {
       title: 'Compartir',
       copy: 'Copiar enlace',

@@ -152,11 +152,16 @@ async function submit() {
 
   sending.value = true
   let result: { comment: TaskComment } | null | undefined
-  if (props.token) {
-    result = await $tvApi.tasks.addPublicComment(props.token, text, name).catch(logError)
+  try {
+    if (props.token) {
+      result = await $tvApi.tasks.addPublicComment(props.token, text, name)
+    }
+    else if (props.taskId) {
+      result = await $tvApi.tasks.addComment(props.taskId, text, name)
+    }
   }
-  else if (props.taskId) {
-    result = await $tvApi.tasks.addComment(props.taskId, text, name).catch(logError)
+  catch (err) {
+    logError(err)
   }
   sending.value = false
 

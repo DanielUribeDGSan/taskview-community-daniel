@@ -9,8 +9,10 @@ import { CanFetchTasks } from './middlewares/CanFetchTasks';
 import { CanRecoveryTaskHistory } from './middlewares/CanRecoveryTaskHistory';
 import { CanUpdateTask } from './middlewares/CanUpdateTask';
 import { CanUpdateTaskAssigneeNew } from './middlewares/CanUpdateTaskAssigneeNew';
+import multer from 'multer';
 import { TaskShareController } from '../task-share/TaskShareController';
 import { TasksController } from './TasksController';
+import { mediaUpload } from './media.utils';
 
 export default class TasksRoutes implements Routable {
     private readonly router: ReturnType<typeof Router>;
@@ -89,5 +91,27 @@ export default class TasksRoutes implements Routable {
             [IsLoggedIn, CanRecoveryTaskHistory],
             this.tasksController.recoverTaskHistory
         );
+
+        /**
+         * Upload media for tasks (images, gifs, videos up to 40MB)
+         */
+        const handleMediaUpload = (req: any, res: any, next: any) => {
+            mediaUpload.single('file')(req, res, (err: any) => {
+                if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+                    return res.status(400).json({ message: 'El archivo supera el límite de 40 MB' });
+                }
+                if (err) {
+                    return res.status(400).json({ message: err.message || 'Error al subir archivo' });
+                }
+                next();
+            });
+        };
+
+        this.router.post('/upload-media', [IsLoggedIn, handleMediaUpload], this.tasksController.uploadMedia);
+
+        /**
+         * Serve media (public so shared tasks can display images/videos)
+         */
+        this.router.get('/media/:filename', this.tasksController.serveMedia);
     }
 }

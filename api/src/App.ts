@@ -63,6 +63,7 @@ export default class App {
         this.app.use(corsMiddleware);
         this.app.use(cookieParser());
         this.app.use(express.json({
+            limit: '50mb',
             verify: (req: any, _res, buf) => {
                 // Store raw body for webhook signature verification github and gitlab integrations
                 if (req.url?.includes('/webhook/')) {
@@ -71,6 +72,7 @@ export default class App {
             },
         }));
         this.app.use(express.urlencoded({
+            limit: '50mb',
             extended: true,
             verify: (req: any, _res, buf) => {
                 // Slack sends slash commands / interactivity as urlencoded; keep the raw body

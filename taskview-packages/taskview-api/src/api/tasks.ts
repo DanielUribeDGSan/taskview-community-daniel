@@ -79,6 +79,29 @@ export default class TvTaskApi extends TvApiBase {
         );
     }
 
+    public async uploadMedia(file: File) {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.request(
+            this.$axios.post<AppResponse<{
+                url: string;
+                filename: string;
+                originalName: string;
+                mimetype: string;
+                size: number;
+                type: 'video' | 'image';
+            }>>(
+                `${this.moduleUrl}/upload-media`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            )
+        );
+    }
+
     public async getShare(taskId: number) {
         return this.request(
             this.$axios.get<AppResponse<TaskShareStatus>>(

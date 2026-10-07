@@ -533,6 +533,8 @@ export default {
     noteExitFullscreen: 'Exit full screen',
     noteExpand: 'Expand',
     noteCollapse: 'Collapse',
+    noteHighlight: 'Highlight color',
+    noteDropMedia: 'Drop images, GIFs or videos here (max 40MB)',
     share: {
       title: 'Share',
       copy: 'Copy link',
